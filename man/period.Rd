@@ -49,7 +49,10 @@ periods in a convenient shorthand format or ISO 8601 specification. All
 unambiguous name units and abbreviations are supported, "m" stands for
 months, "M" for minutes unless ISO 8601 "P" modifier is present (see
 examples). Fractional units are supported but the fractional part is always
-converted to seconds.}
+converted to seconds. A \code{-} or \code{+} directly before a number or before the
+ISO 8601 "P" is a sign: a sign before "P" applies to every component
+("-PT30M"), a sign before a number applies to that component only
+("P1DT-2H" is one day minus two hours), and the two multiply.}
 
 \item{units}{a character vector that lists the type of units to be used. The
 units in units are matched to the values in num according to their
@@ -134,6 +137,8 @@ period("P10M23DT23H") # M stands for months
 period("10DT10M") # M stands for minutes
 period("P3Y6M4DT12H30M5S") # M for both minutes and months
 period("P23DT60H 20min 100 sec") # mixing ISO and lubridate style parsing
+period("-PT30M") # a leading sign negates every component
+period("P1DT-2H") # a component sign negates that component only
 
 ### Comparison with characters (from v1.6.0)
 
