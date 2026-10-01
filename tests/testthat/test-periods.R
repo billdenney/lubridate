@@ -147,6 +147,24 @@ test_that("signs in shorthand periods apply to the following number", {
   expect_equal(period(format(p)), p)
 })
 
+test_that("U+2212 MINUS SIGN is a sign wherever \"-\" is", {
+  minus <- "\u2212"
+  expect_equal(period(paste0(minus, "PT30M")), period(minutes = -30))
+  expect_equal(period(paste0("PT", minus, "0.5H")), period(seconds = -1800))
+  expect_equal(period(paste0("P1DT", minus, "2H")), period(days = 1, hours = -2))
+  expect_equal(period(paste0(minus, "PT", minus, "30M")), period(minutes = 30))
+  expect_equal(period(paste0(minus, "1 day")), period(days = -1))
+  expect_equal(period(paste0(minus, ".5 hours")), period(seconds = -1800))
+  expect_equal(as.duration(paste0(minus, "PT15M")), dminutes(-15))
+  # like "-", it is a separator when not directly before a number or "P"
+  expect_equal(period(paste0("1 day ", minus, " 2 hours")), period(days = 1, hours = 2))
+  expect_equal(period(paste0(minus, "X"))@.Data, NA_real_)
+  # other dashes are not signs
+  for (dash in c("\u2010", "\u2013", "\u2014", "\ufe63", "\uff0d")) {
+    expect_equal(period(paste0(dash, "PT30M")), period(minutes = 30), info = dash)
+  }
+})
+
 test_that("unsigned period strings and dash-space separators are unchanged", {
   expect_equal(period("PT30M"), period(minutes = 30))
   expect_equal(period("PT0.5H"), period(seconds = 1800))

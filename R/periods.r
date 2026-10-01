@@ -347,10 +347,11 @@ setMethod("$<-", signature(x = "Period"), function(x, name, value) {
 #'   unambiguous name units and abbreviations are supported, "m" stands for
 #'   months, "M" for minutes unless ISO 8601 "P" modifier is present (see
 #'   examples). Fractional units are supported but the fractional part is always
-#'   converted to seconds. A `-` or `+` directly before a number or before the
-#'   ISO 8601 "P" is a sign: a sign before "P" applies to every component
-#'   ("-PT30M"), a sign before a number applies to that component only
-#'   ("P1DT-2H" is one day minus two hours), and the two multiply.
+#'   converted to seconds. A `-`, `+` or U+2212 MINUS SIGN directly before a
+#'   number or before the ISO 8601 "P" is a sign: a sign before "P" applies to
+#'   every component ("-PT30M"), a sign before a number applies to that
+#'   component only ("P1DT-2H" is one day minus two hours), and the two
+#'   multiply.
 #' @param units a character vector that lists the type of units to be used. The
 #'   units in units are matched to the values in num according to their
 #'   order. When `num` is character, this argument is ignored.
