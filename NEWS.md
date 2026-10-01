@@ -12,6 +12,9 @@ Version 1.9.5.9999 (dev)
   (`"T1H"`) or after it (`"P1DT"`), and nested parentheses
   (`"1h (2h (3h) 4h) 5h"` was 10 hours). Lubridate shorthand such as
   `"day day"` and `"10DT10M"` is unaffected.
+* Fix two `interval()` examples that spanned 2.5 years instead of 2.5 hours:
+  `"2008-05-11/P2H30M"` and `"08 05 11/P 2h 30m"` read `M` and `m` as months.
+  They now use `"PT2H30M"` and `"30min"`.
 
 
 Version 1.9.5
