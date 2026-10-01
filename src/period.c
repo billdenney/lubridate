@@ -136,6 +136,10 @@ void parse_period_1 (const char **c, double ret[N_PERIOD_UNITS]){
             return;
           }
           seen |= bit;
+          // an hours or seconds designator before 'T' ("P2H30M") starts the
+          // time part, so a later M is minutes, not months
+          if (P && (fu.unit == 2 || fu.unit == 0))
+            P = 0;
         }
         parsed1 = 1;
         T = 0;

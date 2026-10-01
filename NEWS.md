@@ -15,6 +15,10 @@ Version 1.9.5.9999 (dev)
 * Fix two `interval()` examples that spanned 2.5 years instead of 2.5 hours:
   `"2008-05-11/P2H30M"` and `"08 05 11/P 2h 30m"` read `M` and `m` as months.
   They now use `"PT2H30M"` and `"30min"`.
+* Behaviour change: in an ISO 8601 period written without `T`, an `H` or `S`
+  designator now starts the time part, so a following `M` means minutes.
+  `period("P2H30M")` was 2 hours and 30 months and is now 2 hours and 30
+  minutes.
 
 
 Version 1.9.5

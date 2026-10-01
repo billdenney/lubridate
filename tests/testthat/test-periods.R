@@ -158,6 +158,21 @@ test_that("well-formed and documented lenient period strings still parse", {
   expect_equal(period("   1d ("), period(days = 1))
 })
 
+test_that("an H or S designator before T starts the ISO time part", {
+  # used to be 30 months: "M" after "P" was always months
+  expect_equal(period("P2H30M"), period(hours = 2, minutes = 30))
+  expect_equal(period("P1S2M"), period(seconds = 1, minutes = 2))
+  expect_equal(period("P1D2H30M"), period(days = 1, hours = 2, minutes = 30))
+  # M before any time designator is still months
+  expect_equal(period("P3M2H"), period(months = 3, hours = 2))
+  expect_equal(period("P1Y2M10DT2H30M"),
+    period(years = 1, months = 2, days = 10, hours = 2, minutes = 30))
+  expect_equal(
+    interval("2008-05-11/P2H30M"),
+    interval(ymd("2008-05-11", tz = "UTC"), ymd_hm("2008-05-11 02:30", tz = "UTC"))
+  )
+})
+
 test_that("fractional parsing works as expected", {
   expect_equal(
     period("1.1min 2.3sec 2.3secs 1.0H 2.2M 1.5d"),
