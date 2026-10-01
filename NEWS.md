@@ -9,6 +9,9 @@ Version 1.9.5.9999 (dev)
   above 2147483647 wrapped around, so `as.duration("3000000000s")` gave a
   negative duration and `format()` of durations longer than about 68 years did
   not parse back.
+* The period and duration string parser accepts numbers in scientific
+  notation (`"3e+09s"`, `"1.5E3 hours"`). `format()` writes large durations
+  that way, so `as.duration(format(dseconds(3e9)))` used to return `NA`.
 
 
 Version 1.9.5

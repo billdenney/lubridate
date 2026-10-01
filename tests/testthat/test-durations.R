@@ -192,6 +192,28 @@ test_that("numbers above INT_MAX parse without overflow", {
   expect_equal(as.duration(format(durs)), durs)
 })
 
+test_that("numbers in scientific notation parse", {
+  expect_equal(as.duration("3e+09s"), dseconds(3e9))
+  expect_equal(as.duration("3E9s"), dseconds(3e9))
+  expect_equal(as.duration("1.5E3 seconds"), dseconds(1500))
+  expect_equal(as.duration("2.5e-1 hours"), dseconds(900))
+  expect_equal(as.duration("1.e5s"), dseconds(1e5))
+  expect_identical(as.numeric(as.duration("3.15576e+11s")), 315576000000)
+  expect_equal(period("1.5e3 hours"), period(hours = 1500))
+  expect_equal(period("2.5e1 days"), period(days = 25))
+  # "e" without exponent digits is not an exponent and still fails to parse
+  expect_equal(as.numeric(as.duration("1e")), NA_real_)
+  expect_equal(as.numeric(as.duration("1e+s")), NA_real_)
+})
+
+test_that("format() output in scientific notation parses back", {
+  # format() writes these in scientific notation; see "format.Duration works
+  # with NA values"
+  durs <- c(dseconds(c(1e5, 1e8, 3e9)), dyears(1e4))
+  expect_true(all(grepl("e+", format(durs), fixed = TRUE)))
+  expect_identical(as.numeric(as.duration(format(durs))), as.numeric(durs))
+})
+
 test_that("as.duration handles intervals", {
   time1 <- as.POSIXct("2009-01-02 12:24:03", tz = "UTC")
   time2 <- as.POSIXct("2010-02-03 14:31:42", tz = "UTC")

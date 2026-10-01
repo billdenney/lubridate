@@ -22,6 +22,7 @@
 #define USE_RINTERNALS 1 // slight increase in speed
 #include <Rinternals.h>
 #include <stdlib.h>
+#include <math.h>
 #include "constants.h"
 #include "utils.h"
 
@@ -58,6 +59,42 @@ static double parse_digits(const char **c) {
   return out;
 }
 
+// A decimal exponent ("3e+09", "1.5E3"), as format() writes large durations.
+// It counts only directly after a number and only with at least one exponent
+// digit, so no unit name is consumed.
+static int at_exponent(const char *c) {
+  if (*c != 'e' && *c != 'E') return 0;
+  c++;
+  if (*c == '+' || *c == '-') c++;
+  return DIGIT(*c);
+}
+
+// Scale the number spanning [num, *c) by the exponent at *c. The mantissa is
+// rebuilt from its digits so that, e.g., 3.15576e+11 is exactly 315576000000.
+static void apply_exponent(const char *num, const char **c, fractionUnit *out) {
+  double mant = 0;
+  int nfrac = 0, infrac = 0;
+  for (const char *p = num; p < *c; p++) {
+    if (*p == '.') {
+      infrac = 1;
+    } else {
+      mant = mant * 10 + (*p - '0');
+      nfrac += infrac;
+    }
+  }
+  (*c)++; // 'e' or 'E'
+  int neg = 0;
+  if (**c == '+' || **c == '-') {
+    neg = (**c == '-');
+    (*c)++;
+  }
+  double e = parse_digits(c);
+  e = (neg ? -e : e) - nfrac;
+  double total = e >= 0 ? mant * pow(10, e) : mant / pow(10, -e);
+  out->val = floor(total);
+  out->fraction = total - out->val;
+}
+
 fractionUnit parse_period_unit(const char **c) {
   // assumes we are at the beg of a alpha-numeric input
   // units: invalid=-1, S=0,  M=1, H=2, d=3, w=4, m=5, y=6
@@ -66,6 +103,7 @@ fractionUnit parse_period_unit(const char **c) {
   fractionUnit out;
   out.unit = -1;
   if (**c) {
+    const char *num = *c;
     out.val = parse_digits(c);
     if (**c == '.') {
       (*c)++;
@@ -76,6 +114,8 @@ fractionUnit parse_period_unit(const char **c) {
     } else {
       out.fraction = 0.0;
     }
+    if (out.val != -1 && at_exponent(*c))
+      apply_exponent(num, c, &out);
   }
 
   if (**c) {
