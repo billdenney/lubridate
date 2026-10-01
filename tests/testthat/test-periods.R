@@ -107,6 +107,57 @@ test_that("ISO ISO 8601 period parsing works", {
   )
 })
 
+test_that("malformed period strings are NA instead of a silent value", {
+  na <- function(x) is.na(period(x)@.Data) && is.na(as.numeric(as.duration(x)))
+  # a "." with no digits on either side is not a number (was 0)
+  expect_true(na(".h"))
+  expect_true(na("1d .h"))
+  # an ISO designator needs a number (was 1 minute)
+  expect_true(na("PTM"))
+  expect_true(na("PD"))
+  expect_true(na("P1DTH"))
+  # an ISO designator may occur only once (was 2 days)
+  expect_true(na("P1D1D"))
+  expect_true(na("PT1H2H"))
+  expect_true(na("P1DT1M1M"))
+  # "T" needs a "P" or a component before it (was 1 hour) ...
+  expect_true(na("T1H"))
+  # ... at least one component after it (was 1 day), and occurs once
+  expect_true(na("P1DT"))
+  expect_true(na("10DT"))
+  expect_true(na("P1DTT1H"))
+  # "(...)" does not nest (first ")" used to end the skip: 10 hours)
+  expect_true(na("1h (2h (3h) 4h) 5h"))
+  expect_true(na("1h ((2h)) 3h"))
+})
+
+test_that("well-formed and documented lenient period strings still parse", {
+  expect_equal(period("1.h"), period(hours = 1))
+  expect_equal(period(".5h"), period(seconds = 1800))
+  expect_equal(period("0.5h"), period(seconds = 1800))
+  # unit names without a number default to 1 outside ISO designators
+  expect_equal(period("h"), period(hours = 1))
+  expect_equal(period("day day"), period(days = 2))
+  expect_equal(period("P1D day"), period(days = 2))
+  # repeated units add up in lubridate shorthand
+  expect_equal(period("1d 1d"), period(days = 2))
+  # "T" without "P" after a component, as documented
+  expect_equal(period("10DT10M"), period(days = 10, minutes = 10))
+  # ISO forms with M as both month and minute, and mixed ISO and shorthand
+  expect_equal(
+    period("P3Y6M4DT12H30M5S"),
+    period(years = 3, months = 6, days = 4, hours = 12, minutes = 30, seconds = 5)
+  )
+  expect_equal(
+    period("P23DT60H20minutes 100 sec"),
+    period(days = 23, hours = 60, minutes = 20, seconds = 100)
+  )
+  # format() output, with its "(...)" estimate, still round-trips
+  expect_equal(as.duration("1000s (~16.67 minutes)"), dseconds(1000))
+  expect_equal(period("1d (2h) 3M"), period(days = 1, minutes = 3))
+  expect_equal(period("   1d ("), period(days = 1))
+})
+
 test_that("fractional parsing works as expected", {
   expect_equal(
     period("1.1min 2.3sec 2.3secs 1.0H 2.2M 1.5d"),

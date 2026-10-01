@@ -5,6 +5,13 @@ Version 1.9.5.9999 (dev)
 * Fix `month<-` assignment by month name. "April" and "May" were missing from
   the lookup table, which produced `NA` for those names and incorrect month
   numbers for June through December.
+* Behaviour change: the period and duration string parser now returns `NA`
+  for malformed input that used to give a silent value: a lone `.` before a
+  unit (`".h"` was 0), an ISO 8601 designator without a number (`"PTM"` was 1
+  minute) or used twice (`"P1D1D"` was 2 days), a `T` with nothing before it
+  (`"T1H"`) or after it (`"P1DT"`), and nested parentheses
+  (`"1h (2h (3h) 4h) 5h"` was 10 hours). Lubridate shorthand such as
+  `"day day"` and `"10DT10M"` is unaffected.
 
 
 Version 1.9.5
